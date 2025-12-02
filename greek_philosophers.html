@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Greek Philosophers Timeline - Enhanced</title>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&family=Cormorant+Garamond:wght@500&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.6.2/fuse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --pre-socratic: #8B4513;
+            --classical: #1e40af;
+            --hellenistic: #059669;
+            --imperial: #7c2d12;
+            --bg: #faf8f3;
+            --text: #1a1a1a;
+            --border: #d4c5b9;
+            --gold: rgba(218, 165, 32, 0.6);
+            --gold-light: rgba(255, 215, 0, 0.4);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Crimson Pro', serif;
+            background: linear-gradient(135deg, var(--bg) 0%, #f5f1e8 100%);
+            overflow: hidden;
+            height: 100vh;
+            color: var(--text);
+        }
+        
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(250, 248, 243, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 40px;
+            border-bottom: 2px solid var(--border);
+            z-index: 100;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.2em;
+            letter-spacing: 2px;
+        }
+        
+        .header p { font-size: 0.95em; color: #666; margin-top: 5px; }
+        
+        .header-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .search-container {
+            position: relative;
+            flex: 0 1 400px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 10px 40px 10px 15px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            font-family: 'Crimson Pro', serif;
+            font-size: 0.95em;
+            background: white;
+            transition: all 0.2s;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(218, 165, 32, 0.1);
+        }
+        
+        .search-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            pointer-events: none;
+        }
+        
+        .clear-search {
+            position: absolute;
+            right: 35px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            padding: 5px;
+            font-size: 1.2em;
+            display: none;
+        }
+        
+        .clear-search.visible {
+            display: block;
+        }
+        
+        .clear-search:hover {
+            color: #666;
+        }
+        
+        .view-toggle {
+            display: flex;
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        
+        .view-btn {
+            padding: 10px 20px;
+            border: none;
+            background: white;
+            font-family: 'Crimson Pro', serif;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-right: 1px solid var(--border);
+        }
+        
+        .view-btn:last-child {
+            border-right: none;
+        }
+        
+        .view-btn:hover {
+            background: rgba(218, 165, 32, 0.1);
+        }
+        
+        .view-btn.active {
+            background: var(--gold);
+            color: white;
+            font-weight: 600;
+        }
+        
+        .legend {
+            position: fixed;
+            bottom: 20px;
+            left: 300px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+        
+        .legend-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            font-size: 0.85em;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 12px;
+            margin-right: 8px;
+            border-radius: 2px;
+        }
+        
+        .container {
+            display: flex;
+            height: 100vh;
+            padding-top: 135px;
+        }
+        
+        .names {
+            width: 280px;
+            flex-shrink: 0;
+            overflow-y: auto;
+            background: rgba(250, 248, 243, 0.7);
+            border-right: 2px solid var(--border);
+            z-index: 50;
+        }
+        
+        .timeline-wrap {
+            flex: 1;
+            overflow: auto;
+            cursor: grab;
+            user-select: none;
+        }
+        
+        .timeline-wrap.dragging { cursor: grabbing; }
+        .timeline-wrap.dragging * { user-select: none; pointer-events: none; }
+        
+        .timeline {
+            position: relative;
+            width: max-content;
+            min-width: 100%;
+            padding: 20px 80px 40px 20px;
+        }
+        
+        .axis {
+            position: relative;
+            height: 40px;
+            margin-bottom: 10px;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        .marker {
+            position: absolute;
+            top: 0;
+            bottom: -15px;
+            width: 1px;
+            background: var(--border);
+        }
+        
+        .label {
+            position: absolute;
+            top: 20px;
+            font-size: 0.75em;
+            font-weight: 600;
+            transform: translateX(-50%);
+            color: #666;
+        }
+        
+        .period-header {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            font-weight: 600;
+            font-size: 1em;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            user-select: none;
+            border-bottom: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+        
+        .period-header:hover {
+            background: rgba(218, 165, 32, 0.08);
+            box-shadow: 0 0 8px rgba(218, 165, 32, 0.2);
+        }
+        
+        .period-toggle {
+            margin-right: 10px;
+            font-size: 0.8em;
+            transition: transform 0.3s;
+        }
+        
+        .period-header.collapsed .period-toggle { transform: rotate(-90deg); }
+        
+        .period-group {
+            transition: max-height 0.3s ease-out, opacity 0.3s;
+            max-height: 100000px;
+        }
+        
+        .period-group.collapsed {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+        }
+        
+        .name {
+            padding: 8px 15px;
+            font-size: 0.95em;
+            border-bottom: 1px solid rgba(212, 197, 185, 0.3);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .name:hover {
+            background: rgba(218, 165, 32, 0.1);
+            padding-left: 20px;
+            box-shadow: 0 0 8px rgba(218, 165, 32, 0.2);
+        }
+        
+        .name:active { background: rgba(139, 69, 19, 0.15); }
+        
+        .name {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .name.hidden {
+            display: none;
+        }
+        
+        .wiki-link {
+            color: #666;
+            text-decoration: none;
+            font-size: 0.85em;
+            padding: 2px 6px;
+            border-radius: 3px;
+            transition: all 0.2s;
+            opacity: 0.6;
+        }
+        
+        .wiki-link:hover {
+            opacity: 1;
+            background: rgba(218, 165, 32, 0.15);
+            color: var(--text);
+        }
+        
+        .row {
+            position: relative;
+            height: 32px;
+            margin: 3px 0;
+            transition: opacity 0.2s;
+        }
+        
+        .row.hidden {
+            display: none;
+        }
+        
+        .bar {
+            position: absolute;
+            height: 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            padding: 0 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .bar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+        
+        .bar.highlight {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 6px 20px rgba(218, 165, 32, 0.4);
+            z-index: 20;
+            filter: brightness(1.1);
+        }
+        
+        .bar-label {
+            font-size: 0.8em;
+            color: white;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .name.highlight {
+            background: rgba(218, 165, 32, 0.2);
+            padding-left: 20px;
+            box-shadow: 0 0 12px rgba(218, 165, 32, 0.3);
+            font-weight: 600;
+        }
+        
+        .tooltip {
+            position: fixed;
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            max-width: 350px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 1000;
+        }
+        
+        .tooltip.visible { opacity: 1; }
+        
+        .tooltip-name {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-family: 'Cormorant Garamond', serif;
+        }
+        
+        .tooltip-dates {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        
+        .tooltip-age {
+            font-size: 0.85em;
+            color: #999;
+            margin-bottom: 10px;
+        }
+        
+        .tooltip-ideas {
+            font-size: 0.9em;
+            line-height: 1.5;
+            border-top: 1px solid var(--border);
+            padding-top: 10px;
+        }
+
+        /* Network View Styles */
+        .network-container {
+            display: none;
+            flex: 1;
+            position: relative;
+            cursor: grab;
+        }
+        
+        .network-container.active {
+            display: block;
+        }
+        
+        #network {
+            width: 100%;
+            height: 100%;
+            background: white;
+        }
+        
+        #network canvas {
+            cursor: inherit;
+        }
+        
+        .network-legend {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .network-legend-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .network-legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            font-size: 0.85em;
+        }
+        
+        .network-legend-line {
+            width: 30px;
+            height: 2px;
+            margin-right: 8px;
+        }
+
+        .no-results {
+            padding: 20px;
+            text-align: center;
+            color: #999;
+            font-style: italic;
+        }
+
+        .search-results-count {
+            padding: 8px 15px;
+            background: rgba(218, 165, 32, 0.1);
+            border-bottom: 1px solid var(--border);
+            font-size: 0.85em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Greek Philosophers Timeline</h1>
+        <p>Interactive exploration of philosophical thought from 650 BCE to 600 CE</p>
+        <div class="header-controls">
+            <div class="search-container">
+                <input type="text" id="searchInput" class="search-input" placeholder="Search philosophers by name or ideas...">
+                <button id="clearSearch" class="clear-search">×</button>
+                <span class="search-icon">🔍</span>
+            </div>
+            <div class="view-toggle">
+                <button class="view-btn active" data-view="timeline">Timeline View</button>
+                <button class="view-btn" data-view="network">Influence Network</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="names" class="names"></div>
+        <div id="wrap" class="timeline-wrap">
+            <div id="timeline" class="timeline"></div>
+        </div>
+        <div id="networkContainer" class="network-container">
+            <div id="network"></div>
+            <div class="network-legend">
+                <div class="network-legend-title">Relationships</div>
+                <div class="network-legend-item">
+                    <div class="network-legend-line" style="background: #e74c3c;"></div>
+                    <span>Teacher → Student</span>
+                </div>
+                <div class="network-legend-item">
+                    <div class="network-legend-line" style="background: #3498db; border-top: 2px dashed #3498db; background: transparent;"></div>
+                    <span>Influenced by</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="legend">
+        <div class="legend-title">Time Periods</div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: var(--pre-socratic)"></div>
+            <span>Pre-Socratic (650-400 BCE)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: var(--classical)"></div>
+            <span>Classical (400-323 BCE)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: var(--hellenistic)"></div>
+            <span>Hellenistic (323 BCE-31 BCE)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: var(--imperial)"></div>
+            <span>Imperial (31 BCE-600 CE)</span>
+        </div>
+    </div>
+
+    <div id="tooltip" class="tooltip">
+        <div class="tooltip-name"></div>
+        <div class="tooltip-dates"></div>
+        <div class="tooltip-age"></div>
+        <div class="tooltip-ideas"></div>
+    </div>
+
+    <script>
+        // Data
+        const philosophers = [
+            {name: "Thales", birth: -624, death: -546, period: "pre-socratic", ideas: "First philosopher; water as fundamental substance; predicted solar eclipse; geometry; natural explanations.", wiki: "Thales_of_Miletus"},
+            {name: "Anaximander", birth: -610, death: -546, period: "pre-socratic", ideas: "The Apeiron (infinite/boundless); first cosmology; evolution theory; maps and astronomy.", wiki: "Anaximander"},
+            {name: "Anaximenes", birth: -585, death: -528, period: "pre-socratic", ideas: "Air as fundamental substance; condensation and rarefaction; meteorology; naturalism.", wiki: "Anaximenes_of_Miletus"},
+            {name: "Pythagoras", birth: -570, death: -495, period: "pre-socratic", ideas: "Mathematics and reality; transmigration of souls; music theory; number mysticism; ethical vegetarianism.", wiki: "Pythagoras"},
+            {name: "Xenophanes", birth: -570, death: -475, period: "pre-socratic", ideas: "Criticized anthropomorphic gods; monotheism; epistemological skepticism; geology; fossils.", wiki: "Xenophanes"},
+            {name: "Heraclitus", birth: -535, death: -475, period: "pre-socratic", ideas: "Flux and change; fire as fundamental; unity of opposites; logos; 'you cannot step twice into the same river'.", wiki: "Heraclitus"},
+            {name: "Parmenides", birth: -515, death: -450, period: "pre-socratic", ideas: "Being is unchanging; logic and deduction; rejected change and multiplicity; Way of Truth vs. Opinion.", wiki: "Parmenides"},
+            {name: "Anaxagoras", birth: -500, death: -428, period: "pre-socratic", ideas: "Nous (mind) as cosmic principle; everything in everything; astronomy; scientific method; atheism charges.", wiki: "Anaxagoras"},
+            {name: "Empedocles", birth: -490, death: -430, period: "pre-socratic", ideas: "Four elements (earth, air, fire, water); Love and Strife as forces; evolution; cosmology; poet-philosopher.", wiki: "Empedocles"},
+            {name: "Zeno of Elea", birth: -495, death: -430, period: "pre-socratic", ideas: "Paradoxes of motion; defense of Parmenides; dialectical method; Achilles and tortoise.", wiki: "Zeno_of_Elea"},
+            {name: "Protagoras", birth: -490, death: -420, period: "pre-socratic", ideas: "Man is the measure; relativism; sophistry; agnosticism; rhetoric; first to charge for teaching.", wiki: "Protagoras"},
+            {name: "Gorgias", birth: -483, death: -375, period: "pre-socratic", ideas: "Rhetoric over truth; nothing exists; skepticism; power of language; sophistry.", wiki: "Gorgias"},
+            {name: "Democritus", birth: -460, death: -370, period: "pre-socratic", ideas: "Atomism; void and atoms; determinism; ethics based on cheerfulness; materialism; laughing philosopher.", wiki: "Democritus"},
+            {name: "Socrates", birth: -469, death: -399, period: "classical", ideas: "Socratic method; virtue is knowledge; examined life; ethics; irony; martyrdom for philosophy.", wiki: "Socrates"},
+            {name: "Antisthenes", birth: -445, death: -365, period: "classical", ideas: "Founded Cynicism; virtue and self-sufficiency; rejected pleasure; simple living; influenced by Socrates.", wiki: "Antisthenes"},
+            {name: "Aristippus", birth: -435, death: -356, period: "classical", ideas: "Founded Cyrenaics; hedonism; pleasure as good; present moment; rejected abstract knowledge.", wiki: "Aristippus"},
+            {name: "Plato", birth: -428, death: -348, period: "classical", ideas: "Theory of Forms; Socratic dialogues; Republic; Academy; ideal state; philosopher-kings; tripartite soul.", wiki: "Plato"},
+            {name: "Diogenes of Sinope", birth: -412, death: -323, period: "classical", ideas: "Cynicism; lived in a barrel; rejected convention; cosmopolitanism; shamelessness; dog philosopher.", wiki: "Diogenes"},
+            {name: "Speusippus", birth: -407, death: -339, period: "classical", ideas: "Plato's nephew; succeeded him at Academy; mathematical philosophy; rejected Forms.", wiki: "Speusippus"},
+            {name: "Xenocrates", birth: -396, death: -314, period: "classical", ideas: "Platonist; head of Academy; systematized Plato's doctrines; metaphysics; numbered souls.", wiki: "Xenocrates"},
+            {name: "Aristotle", birth: -384, death: -322, period: "classical", ideas: "Logic; metaphysics; ethics; politics; Lyceum; biology; causation; virtue ethics; golden mean.", wiki: "Aristotle"},
+            {name: "Crates of Thebes", birth: -365, death: -285, period: "classical", ideas: "Cynic philosopher; gave away wealth; married Hipparchia; lived simply; satirical poetry.", wiki: "Crates_of_Thebes"},
+            {name: "Theophrastus", birth: -371, death: -287, period: "hellenistic", ideas: "Aristotle's successor; botany; Characters; logic; natural history; preserved Peripatetic school.", wiki: "Theophrastus"},
+            {name: "Pyrrho", birth: -360, death: -270, period: "hellenistic", ideas: "Founded Skepticism; suspension of judgment; ataraxia (tranquility); no certain knowledge.", wiki: "Pyrrho"},
+            {name: "Epicurus", birth: -341, death: -270, period: "hellenistic", ideas: "Hedonism; atomism; Garden school; pleasure as absence of pain; ethics; friendship; gods uninvolved.", wiki: "Epicurus"},
+            {name: "Zeno of Citium", birth: -334, death: -262, period: "hellenistic", ideas: "Founded Stoicism; virtue as only good; cosmopolitanism; Stoa Poikile; logic; physics; ethics.", wiki: "Zeno_of_Citium"},
+            {name: "Cleanthes", birth: -330, death: -230, period: "hellenistic", ideas: "Stoic; Hymn to Zeus; cosmic unity; determinism; ethics; succeeded Zeno.", wiki: "Cleanthes"},
+            {name: "Timon of Phlius", birth: -320, death: -230, period: "hellenistic", ideas: "Skeptic; student of Pyrrho; satirical poetry; Silloi; criticized dogmatism.", wiki: "Timon_of_Phlius"},
+            {name: "Arcesilaus", birth: -316, death: -241, period: "hellenistic", ideas: "Academic Skepticism; suspended judgment; criticized Stoics; probabilism; Academy leader.", wiki: "Arcesilaus"},
+            {name: "Chrysippus", birth: -279, death: -206, period: "hellenistic", ideas: "Systematized Stoicism; logic; fate and free will; 700+ works; second founder of Stoicism.", wiki: "Chrysippus"},
+            {name: "Carneades", birth: -214, death: -129, period: "hellenistic", ideas: "Academic Skeptic; probabilism; ethics; argued both sides; challenged dogmatism; Rome visit.", wiki: "Carneades"},
+            {name: "Panaetius", birth: -185, death: -110, period: "hellenistic", ideas: "Middle Stoicism; brought Stoicism to Rome; ethics; duties; influenced Cicero; cosmopolitanism.", wiki: "Panaetius"},
+            {name: "Posidonius", birth: -135, death: -51, period: "hellenistic", ideas: "Stoic polymath; history; geography; astronomy; natural science; cosmic sympathy; influenced Romans.", wiki: "Posidonius"},
+            {name: "Philo of Larissa", birth: -159, death: -84, period: "hellenistic", ideas: "Academic Skeptic; teacher of Cicero; fallibilism; last head of Old Academy; moved to Rome.", wiki: "Philo_of_Larissa"},
+            {name: "Antiochus of Ascalon", birth: -130, death: -68, period: "hellenistic", ideas: "Rejected skepticism; synthesized Plato, Aristotle, Stoics; Old Academy restoration; dogmatism.", wiki: "Antiochus_of_Ascalon"},
+            {name: "Cicero", birth: -106, death: -43, period: "hellenistic", ideas: "Roman statesman-philosopher; Academic Skepticism; transmitted Greek philosophy to Rome; rhetoric; law; De Re Publica.", wiki: "Cicero"},
+            {name: "Lucretius", birth: -99, death: -55, period: "hellenistic", ideas: "Epicurean poet; De Rerum Natura; atomism; naturalism; mortality of soul; anti-religion.", wiki: "Lucretius"},
+            {name: "Philodemus", birth: -110, death: -40, period: "hellenistic", ideas: "Epicurean; Herculaneum papyri; ethics; aesthetics; rhetoric; friendship; lived in Italy.", wiki: "Philodemus"},
+            {name: "Aenesidemus", birth: -100, death: -40, period: "hellenistic", ideas: "Revived Pyrrhonian Skepticism; ten modes; tropes; suspended judgment; criticized dogmatism.", wiki: "Aenesidemus"},
+            {name: "Seneca", birth: -4, death: 65, period: "imperial", ideas: "Roman Stoic; tragedies; letters; essays; tutor to Nero; ethics; suicide; brevity of life.", wiki: "Seneca_the_Younger"},
+            {name: "Musonius Rufus", birth: 30, death: 101, period: "imperial", ideas: "Roman Stoic; taught Epictetus; equality; practical ethics; exile; asceticism; women's education.", wiki: "Musonius_Rufus"},
+            {name: "Epictetus", birth: 50, death: 135, period: "imperial", ideas: "Stoic slave-philosopher; Enchiridion; Discourses; dichotomy of control; inner freedom; practical ethics.", wiki: "Epictetus"},
+            {name: "Plutarch", birth: 46, death: 120, period: "imperial", ideas: "Parallel Lives; Moralia; Middle Platonism; ethics; biography; theology; Delphic priest.", wiki: "Plutarch"},
+            {name: "Dio Chrysostom", birth: 40, death: 115, period: "imperial", ideas: "Orator; Stoic-Cynic; kingship; exile; practical philosophy; speeches; Second Sophistic.", wiki: "Dio_Chrysostom"},
+            {name: "Sextus Empiricus", birth: 160, death: 210, period: "imperial", ideas: "Pyrrhonian Skepticism; Outlines of Pyrrhonism; ten modes; medical skepticism; suspended judgment.", wiki: "Sextus_Empiricus"},
+            {name: "Marcus Aurelius", birth: 121, death: 180, period: "imperial", ideas: "Philosopher-emperor; Meditations; Stoicism; duty; cosmopolitanism; logos; Marcus the Philosopher.", wiki: "Marcus_Aurelius"},
+            {name: "Galen", birth: 129, death: 200, period: "imperial", ideas: "Physician-philosopher; medical works; logic; Aristotelian; anatomy; scientific method; influenced medicine.", wiki: "Galen"},
+            {name: "Clement of Alexandria", birth: 150, death: 215, period: "imperial", ideas: "Christian Platonist; faith and reason; Stromata; theology; Catechetical School; synthesis of Greek and Christian.", wiki: "Clement_of_Alexandria"},
+            {name: "Alcinous", birth: 130, death: 190, period: "imperial", ideas: "Middle Platonist; Handbook of Platonism; systematized Plato; theology; metaphysics; educational.", wiki: "Alcinous_(philosopher)"},
+            {name: "Alexander of Aphrodisias", birth: 150, death: 215, period: "imperial", ideas: "Peripatetic; Aristotle commentator; fate and providence; psychology; De Fato; preserved Aristotle.", wiki: "Alexander_of_Aphrodisias"},
+            {name: "Plotinus", birth: 204, death: 270, period: "imperial", ideas: "Founded Neoplatonism; the One; emanation; Enneads; mysticism; transcendence; influenced Christianity.", wiki: "Plotinus"},
+            {name: "Origen", birth: 185, death: 253, period: "imperial", ideas: "Christian theology; biblical exegesis; Platonism; Alexandria; First Principles; allegory; universal salvation.", wiki: "Origen"},
+            {name: "Porphyry", birth: 234, death: 305, period: "imperial", ideas: "Neoplatonist; edited Plotinus; Isagoge; logic; vegetarianism; theology; attacked Christianity.", wiki: "Porphyry_(philosopher)"},
+            {name: "Iamblichus", birth: 245, death: 325, period: "imperial", ideas: "Neoplatonist; theurgy; Syrian school; mathematics; mysticism; elaborated emanation theory.", wiki: "Iamblichus"},
+            {name: "Themistius", birth: 317, death: 388, period: "imperial", ideas: "Peripatetic; Aristotle paraphrases; philosopher-statesman; religious tolerance; Constantinople; paganism.", wiki: "Themistius"},
+            {name: "Gregory of Nazianzus", birth: 329, death: 390, period: "imperial", ideas: "Cappadocian Father; Trinity; rhetoric; theology; poetry; Constantinople; classical education.", wiki: "Gregory_of_Nazianzus"},
+            {name: "Basil of Caesarea", birth: 330, death: 379, period: "imperial", ideas: "Cappadocian Father; monasticism; Trinity; social justice; classical learning; liturgy.", wiki: "Basil_of_Caesarea"},
+            {name: "Gregory of Nyssa", birth: 335, death: 395, period: "imperial", ideas: "Cappadocian Father; mystical theology; infinity of God; apocatastasis; Platonism; contemplation.", wiki: "Gregory_of_Nyssa"},
+            {name: "Augustine", birth: 354, death: 430, period: "imperial", ideas: "Neoplatonism and Christianity; Confessions; City of God; original sin; grace; time; memory; just war.", wiki: "Augustine_of_Hippo"},
+            {name: "Hypatia", birth: 360, death: 415, period: "imperial", ideas: "Neoplatonist; mathematics; astronomy; Alexandria; first notable woman philosopher; martyrdom.", wiki: "Hypatia"},
+            {name: "Proclus", birth: 412, death: 485, period: "imperial", ideas: "Late Neoplatonist; systematized Platonism; Elements of Theology; Athenian school; metaphysics; mathematics.", wiki: "Proclus"},
+            {name: "Ammonius (son of Hermias)", birth: 440, death: 520, period: "imperial", ideas: "Neoplatonist commentator; reconciled Plato and Aristotle; taught in Alexandria; logic.", wiki: "Ammonius_Hermiae"},
+            {name: "Damascius", birth: 458, death: 538, period: "imperial", ideas: "Last Neoplatonist; ineffable first principle; philosophy and mysticism; closed Athenian school.", wiki: "Damascius"},
+            {name: "Boethius", birth: 477, death: 524, period: "imperial", ideas: "Consolation of Philosophy; transmitted Greek philosophy to medieval West; logic; music theory; fortune's wheel.", wiki: "Boethius"},
+            {name: "Marinus of Neapolis", birth: 440, death: 495, period: "imperial", ideas: "Neoplatonist; student and biographer of Proclus; succeeded as head of Academy; commentaries; mathematics.", wiki: "Marinus_of_Neapolis"},
+            {name: "Simplicius", birth: 490, death: 560, period: "imperial", ideas: "Neoplatonist commentator; preserved pre-Socratic fragments; Aristotle commentaries; philosophy of science.", wiki: "Simplicius_of_Cilicia"},
+            {name: "John Philoponus", birth: 490, death: 570, period: "imperial", ideas: "Christian philosophy; criticized Aristotle's eternity of world; impetus theory; influenced medieval science; anti-pagan.", wiki: "John_Philoponus"},
+            {name: "Olympiodorus", birth: 495, death: 570, period: "imperial", ideas: "Last Athenian Neoplatonist; commentaries; preserved philosophical tradition; alchemy.", wiki: "Olympiodorus_the_Younger"},
+            {name: "Macrobius", birth: 385, death: 430, period: "imperial", ideas: "Neoplatonist; Commentary on Scipio's Dream; Saturnalia; transmitted Platonic cosmology to Middle Ages."}
+        ];
+
+        // Add relationship data for network
+        const relationships = [
+            // Teacher-Student relationships
+            {from: "Thales", to: "Anaximander", type: "teacher"},
+            {from: "Anaximander", to: "Anaximenes", type: "teacher"},
+            {from: "Anaximenes", to: "Anaxagoras", type: "influenced"},
+            {from: "Pythagoras", to: "Empedocles", type: "influenced"},
+            {from: "Parmenides", to: "Zeno of Elea", type: "teacher"},
+            {from: "Heraclitus", to: "Plato", type: "influenced"},
+            {from: "Parmenides", to: "Plato", type: "influenced"},
+            {from: "Anaxagoras", to: "Socrates", type: "influenced"},
+            {from: "Socrates", to: "Plato", type: "teacher"},
+            {from: "Socrates", to: "Antisthenes", type: "teacher"},
+            {from: "Socrates", to: "Aristippus", type: "teacher"},
+            {from: "Plato", to: "Aristotle", type: "teacher"},
+            {from: "Plato", to: "Speusippus", type: "teacher"},
+            {from: "Antisthenes", to: "Diogenes of Sinope", type: "teacher"},
+            {from: "Diogenes of Sinope", to: "Crates of Thebes", type: "teacher"},
+            {from: "Aristotle", to: "Theophrastus", type: "teacher"},
+            {from: "Democritus", to: "Epicurus", type: "influenced"},
+            {from: "Pyrrho", to: "Timon of Phlius", type: "teacher"},
+            {from: "Zeno of Citium", to: "Cleanthes", type: "teacher"},
+            {from: "Cleanthes", to: "Chrysippus", type: "teacher"},
+            {from: "Chrysippus", to: "Panaetius", type: "influenced"},
+            {from: "Panaetius", to: "Posidonius", type: "influenced"},
+            {from: "Plato", to: "Plotinus", type: "influenced"},
+            {from: "Aristotle", to: "Plotinus", type: "influenced"},
+            {from: "Plotinus", to: "Porphyry", type: "teacher"},
+            {from: "Porphyry", to: "Iamblichus", type: "teacher"},
+            {from: "Iamblichus", to: "Proclus", type: "influenced"},
+            {from: "Proclus", to: "Marinus of Neapolis", type: "teacher"},
+            {from: "Proclus", to: "Damascius", type: "influenced"},
+            {from: "Musonius Rufus", to: "Epictetus", type: "teacher"},
+            {from: "Epictetus", to: "Marcus Aurelius", type: "influenced"},
+            {from: "Zeno of Citium", to: "Seneca", type: "influenced"},
+            {from: "Philo of Larissa", to: "Cicero", type: "teacher"},
+            {from: "Epicurus", to: "Lucretius", type: "influenced"},
+            {from: "Plato", to: "Plutarch", type: "influenced"},
+            {from: "Plato", to: "Augustine", type: "influenced"},
+            {from: "Plotinus", to: "Augustine", type: "influenced"},
+            {from: "Aristotle", to: "Alexander of Aphrodisias", type: "influenced"},
+            {from: "Plotinus", to: "Hypatia", type: "influenced"},
+            {from: "Plato", to: "Boethius", type: "influenced"},
+            {from: "Aristotle", to: "Boethius", type: "influenced"},
+        ];
+        
+        // Config
+        const cfg = {
+            minYear: -650,
+            maxYear: 600,
+            pxPerYear: 4,
+            colors: {
+                'pre-socratic': 'var(--pre-socratic)',
+                'classical': 'var(--classical)',
+                'hellenistic': 'var(--hellenistic)',
+                'imperial': 'var(--imperial)'
+            },
+            periods: {
+                'pre-socratic': 'Pre-Socratic Period',
+                'classical': 'Classical Period',
+                'hellenistic': 'Hellenistic Period',
+                'imperial': 'Imperial Period'
+            }
+        };
+        
+        // DOM refs
+        const $ = (id) => document.getElementById(id);
+        const $$ = (sel, ctx = document) => ctx.querySelector(sel);
+        const create = (tag, cls) => Object.assign(document.createElement(tag), cls ? {className: cls} : {});
+        
+        const names = $('names');
+        const timeline = $('timeline');
+        const wrap = $('wrap');
+        const tooltip = $('tooltip');
+        const searchInput = $('searchInput');
+        const clearSearch = $('clearSearch');
+        const networkContainer = $('networkContainer');
+        const width = (cfg.maxYear - cfg.minYear) * cfg.pxPerYear;
+        
+        // Fuse.js setup
+        const fuse = new Fuse(philosophers, {
+            keys: ['name', 'ideas'],
+            threshold: 0.3,
+            includeScore: true
+        });
+        
+        // Store references to DOM elements
+        let philosopherElements = {};
+        
+        // Utilities
+        const formatDate = (b, d) => 
+            b < 0 && d < 0 ? `${Math.abs(b)}-${Math.abs(d)} BCE` :
+            b < 0 && d >= 0 ? `${Math.abs(b)} BCE - ${d} CE` : `${b}-${d} CE`;
+        
+        const formatAge = (b, d) => `Age: ${d - b} years`;
+        
+        const getOffset = (el, container) => {
+            let top = 0;
+            while (el && el !== container) {
+                top += el.offsetTop;
+                el = el.offsetParent;
+            }
+            return top;
+        };
+        
+        const centerInView = (container, element, horizontal = true, vertical = true) => {
+            const opts = { behavior: 'smooth' };
+            if (vertical) {
+                const top = getOffset(element, container);
+                opts.top = Math.max(0, top - container.clientHeight / 2 + element.offsetHeight / 2);
+            }
+            if (horizontal && element.style.left) {
+                const left = parseFloat(element.style.left);
+                opts.left = Math.max(0, left - container.clientWidth / 2 + parseFloat(element.style.width || 0) / 2);
+            }
+            container.scrollTo(opts);
+        };
+        
+        const showTip = (p, e) => {
+            $$('.tooltip-name', tooltip).textContent = p.name;
+            $$('.tooltip-dates', tooltip).textContent = formatDate(p.birth, p.death);
+            $$('.tooltip-age', tooltip).textContent = formatAge(p.birth, p.death);
+            $$('.tooltip-ideas', tooltip).textContent = p.ideas;
+            tooltip.classList.add('visible');
+            updateTip(e);
+        };
+        
+        const updateTip = (e) => {
+            const rect = tooltip.getBoundingClientRect();
+            const x = e.clientX + 20 + rect.width > window.innerWidth ? e.clientX - rect.width - 20 : e.clientX + 20;
+            const y = e.clientY + 20 + rect.height > window.innerHeight ? e.clientY - rect.height - 20 : e.clientY + 20;
+            Object.assign(tooltip.style, { left: x + 'px', top: y + 'px' });
+        };
+        
+        const hideTip = () => tooltip.classList.remove('visible');
+        
+        // Search functionality
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.trim();
+            clearSearch.classList.toggle('visible', query.length > 0);
+            
+            if (query.length === 0) {
+                // Show all in timeline
+                Object.values(philosopherElements).forEach(els => {
+                    els.nameEl.classList.remove('hidden');
+                    els.row.classList.remove('hidden');
+                });
+                removeSearchResultsCount();
+                
+                // Show all in network
+                if (network && networkNodes && networkEdges) {
+                    networkNodes.forEach(node => {
+                        networkNodes.update({ id: node.id, hidden: false });
+                    });
+                    networkEdges.forEach(edge => {
+                        networkEdges.update({ id: edge.id, hidden: false });
+                    });
+                    // Ensure physics is off
+                    network.setOptions({ physics: false });
+                    setTimeout(() => {
+                        network.fit({
+                            animation: { duration: 500, easingFunction: 'easeInOutQuad' }
+                        });
+                        // Ensure physics stays off after fit
+                        setTimeout(() => {
+                            network.setOptions({ physics: false });
+                        }, 600);
+                    }, 50);
+                }
+                return;
+            }
+            
+            const results = fuse.search(query);
+            const resultNames = new Set(results.map(r => r.item.name));
+            
+            // Filter timeline view
+            Object.entries(philosopherElements).forEach(([name, els]) => {
+                const shouldShow = resultNames.has(name);
+                els.nameEl.classList.toggle('hidden', !shouldShow);
+                els.row.classList.toggle('hidden', !shouldShow);
+            });
+            
+            // Filter network view
+            if (currentView === 'network') {
+                filterNetwork(resultNames);
+            }
+            
+            updateSearchResultsCount(results.length);
+        });
+        
+        clearSearch.addEventListener('click', () => {
+            searchInput.value = '';
+            searchInput.dispatchEvent(new Event('input'));
+            searchInput.focus();
+        });
+        
+        function updateSearchResultsCount(count) {
+            removeSearchResultsCount();
+            const countEl = create('div', 'search-results-count');
+            countEl.textContent = `${count} philosopher${count !== 1 ? 's' : ''} found`;
+            names.insertBefore(countEl, names.firstChild);
+        }
+        
+        function removeSearchResultsCount() {
+            const existing = names.querySelector('.search-results-count');
+            if (existing) existing.remove();
+        }
+        
+        // Time axis
+        const axis = create('div', 'axis');
+        axis.style.width = width + 'px';
+        _.range(-600, 601, 100).forEach(y => {
+            const pos = (y - cfg.minYear) * cfg.pxPerYear;
+            const marker = create('div', 'marker');
+            marker.style.left = pos + 'px';
+            const label = create('div', 'label');
+            label.textContent = y < 0 ? `${Math.abs(y)} BCE` : y === 0 ? '0' : `${y} CE`;
+            label.style.left = pos + 'px';
+            axis.append(marker, label);
+        });
+        timeline.appendChild(axis);
+        
+        // Group by period and render
+        const byPeriod = _.groupBy(_.sortBy(philosophers, 'birth'), 'period');
+        
+        Object.entries(cfg.periods).forEach(([key, title]) => {
+            const phils = byPeriod[key];
+            if (!phils) return;
+            
+            // Names column
+            const nameHeader = create('div', 'period-header');
+            nameHeader.innerHTML = `<span class="period-toggle">▼</span>${title}`;
+            nameHeader.style.color = cfg.colors[key];
+            const nameGroup = create('div', 'period-group');
+            names.append(nameHeader, nameGroup);
+            
+            // Timeline column
+            const timeGroup = create('div', 'period-group');
+            timeline.appendChild(timeGroup);
+            
+            // Toggle
+            nameHeader.onclick = () => {
+                const collapsed = nameHeader.classList.toggle('collapsed');
+                nameGroup.classList.toggle('collapsed', collapsed);
+                timeGroup.classList.toggle('collapsed', collapsed);
+            };
+            
+            // Create elements
+            phils.forEach(p => {
+                const nameEl = create('div', 'name');
+                
+                // Create name text span
+                const nameText = document.createElement('span');
+                nameText.textContent = p.name;
+                
+                // Create Wikipedia link
+                const wikiLink = document.createElement('a');
+                wikiLink.href = `https://en.wikipedia.org/wiki/${p.wiki}`;
+                wikiLink.textContent = 'Ⓦ';
+                wikiLink.className = 'wiki-link';
+                wikiLink.target = '_blank';
+                wikiLink.title = `Wikipedia: ${p.name}`;
+                wikiLink.onclick = (e) => e.stopPropagation();
+                
+                nameEl.appendChild(nameText);
+                nameEl.appendChild(wikiLink);
+                nameGroup.appendChild(nameEl);
+                
+                const row = create('div', 'row');
+                const bar = create('div', 'bar');
+                bar.style.cssText = `left:${(p.birth - cfg.minYear) * cfg.pxPerYear}px;width:${(p.death - p.birth) * cfg.pxPerYear}px;background:${cfg.colors[p.period]}`;
+                
+                const label = create('span', 'bar-label');
+                label.textContent = p.name;
+                bar.appendChild(label);
+                row.appendChild(bar);
+                timeGroup.appendChild(row);
+                
+                // Store references
+                philosopherElements[p.name] = { nameEl, row, bar };
+                
+                // Event handlers
+                const highlight = (on) => [bar, nameEl].forEach(el => el.classList.toggle('highlight', on));
+                const onEnter = (e) => { showTip(p, e); highlight(true); };
+                const onLeave = () => { hideTip(); highlight(false); };
+                
+                [nameEl, bar].forEach(el => {
+                    el.onmouseenter = onEnter;
+                    el.onmousemove = updateTip;
+                    el.onmouseleave = onLeave;
+                });
+                
+                // Click to center
+                nameEl.onclick = () => centerInView(wrap, bar);
+                bar.onclick = (e) => {
+                    e.stopPropagation();
+                    centerInView(wrap, bar);
+                    centerInView(names, nameEl, false);
+                };
+            });
+        });
+        
+        // Drag scrolling (only for timeline view)
+        let drag = { active: false, moved: false, x: 0, y: 0, sx: 0, sy: 0 };
+        
+        function enableTimelineDrag() {
+            wrap.onmousedown = (e) => {
+                if (currentView !== 'timeline') return;
+                if (e.target.closest('.bar')) return;
+                drag = { active: true, moved: false, x: e.pageX, y: e.pageY, sx: wrap.scrollLeft, sy: wrap.scrollTop };
+                wrap.classList.add('dragging');
+                e.preventDefault();
+            };
+            
+            wrap.onmousemove = (e) => {
+                if (!drag.active || currentView !== 'timeline') return;
+                e.preventDefault();
+                drag.moved = true;
+                wrap.scrollLeft = drag.sx - (e.pageX - drag.x) * 1.5;
+                wrap.scrollTop = drag.sy - (e.pageY - drag.y) * 1.5;
+            };
+            
+            wrap.onmouseup = wrap.onmouseleave = () => {
+                drag.active = false;
+                wrap.classList.remove('dragging');
+            };
+        }
+        
+        enableTimelineDrag();
+        
+        // Network visualization
+        let network = null;
+        let networkNodes = null;
+        let networkEdges = null;
+        let currentView = 'timeline';
+        let tooltipUpdateHandler = null;
+        
+        function initNetwork() {
+            networkNodes = new vis.DataSet(philosophers.map(p => ({
+                id: p.name,
+                label: p.name,
+                color: {
+                    background: cfg.colors[p.period].replace('var(', '').replace(')', ''),
+                    border: cfg.colors[p.period].replace('var(', '').replace(')', ''),
+                    highlight: {
+                        background: 'rgba(218, 165, 32, 0.8)',
+                        border: 'rgba(218, 165, 32, 1)'
+                    }
+                },
+                font: {
+                    size: 14,
+                    face: 'Crimson Pro'
+                },
+                hidden: false,
+                philosopherData: p  // Store full philosopher data for tooltip
+            })));
+            
+            networkEdges = new vis.DataSet(relationships.map((r, i) => ({
+                id: i,
+                from: r.from,
+                to: r.to,
+                color: r.type === 'teacher' ? '#e74c3c' : '#3498db',
+                width: r.type === 'teacher' ? 2 : 1,
+                dashes: r.type === 'influenced',
+                arrows: 'to',
+                smooth: {
+                    type: 'curvedCW',
+                    roundness: 0.2
+                },
+                hidden: false
+            })));
+            
+            const container = $('network');
+            
+            // Only prevent wheel events when network view is active
+            container.addEventListener('wheel', (e) => {
+                if (currentView === 'network') {
+                    e.stopPropagation();
+                }
+            }, { passive: false });
+            
+            const data = { nodes: networkNodes, edges: networkEdges };
+            const options = {
+                nodes: {
+                    shape: 'dot',
+                    size: 20,
+                    borderWidth: 2,
+                    shadow: true
+                },
+                edges: {
+                    smooth: {
+                        type: 'cubicBezier',
+                        forceDirection: 'horizontal',
+                        roundness: 0.4
+                    }
+                },
+                physics: {
+                    enabled: true,
+                    stabilization: {
+                        enabled: true,
+                        iterations: 300,
+                        updateInterval: 25
+                    },
+                    barnesHut: {
+                        gravitationalConstant: -8000,
+                        springLength: 150,
+                        springConstant: 0.04,
+                        damping: 0.09,
+                        avoidOverlap: 0.2
+                    },
+                    solver: 'barnesHut',
+                    timestep: 0.5,
+                    adaptiveTimestep: true
+                },
+                layout: {
+                    hierarchical: {
+                        enabled: true,
+                        direction: 'LR',
+                        sortMethod: 'directed',
+                        levelSeparation: 200,
+                        nodeSpacing: 150
+                    }
+                },
+                interaction: {
+                    hover: true,
+                    tooltipDelay: 200,
+                    navigationButtons: true,
+                    keyboard: {
+                        enabled: true,
+                        bindToWindow: false
+                    },
+                    dragNodes: true,
+                    dragView: true,
+                    zoomView: true,
+                    zoomSpeed: 1
+                },
+                tooltips: {
+                    enabled: false  // Disable vis.js built-in tooltips
+                }
+            };
+            
+            network = new vis.Network(container, data, options);
+            
+            // Disable physics after stabilization for better performance and dragging
+            network.on('stabilizationIterationsDone', () => {
+                network.setOptions({ physics: false });
+            });
+            
+            // Track if we're dragging a node vs dragging the canvas
+            let isDraggingNode = false;
+            
+            // Re-enable physics temporarily only when dragging a specific node
+            network.on('dragStart', (params) => {
+                // Hide tooltip when dragging starts
+                hideTip();
+                if (tooltipUpdateHandler) {
+                    container.removeEventListener('mousemove', tooltipUpdateHandler);
+                    tooltipUpdateHandler = null;
+                }
+                
+                if (params.nodes.length > 0) {
+                    isDraggingNode = true;
+                    // Only enable physics for node dragging, not canvas dragging
+                    network.setOptions({ 
+                        physics: { 
+                            enabled: true, 
+                            solver: 'barnesHut',
+                            stabilization: false
+                        } 
+                    });
+                } else {
+                    isDraggingNode = false;
+                }
+            });
+            
+            network.on('dragging', (params) => {
+                // If dragging canvas (not a node), ensure physics is off
+                if (!isDraggingNode) {
+                    network.setOptions({ physics: false });
+                }
+            });
+            
+            network.on('dragEnd', () => {
+                // Always disable physics after any drag operation
+                isDraggingNode = false;
+                network.setOptions({ physics: false });
+            });
+            
+            // Ensure zoom works correctly - prevent any interference
+            network.on('zoom', () => {
+                // Make sure physics doesn't interfere with zoom
+                if (!isDraggingNode) {
+                    network.setOptions({ physics: false });
+                }
+                // Hide tooltip during zoom
+                hideTip();
+                if (tooltipUpdateHandler) {
+                    container.removeEventListener('mousemove', tooltipUpdateHandler);
+                    tooltipUpdateHandler = null;
+                }
+            });
+            
+            // Custom tooltip for network nodes
+            network.on('hoverNode', (params) => {
+                const nodeId = params.node;
+                const node = networkNodes.get(nodeId);
+                if (node && node.philosopherData) {
+                    const p = node.philosopherData;
+                    $$('.tooltip-name', tooltip).textContent = p.name;
+                    $$('.tooltip-dates', tooltip).textContent = formatDate(p.birth, p.death);
+                    $$('.tooltip-age', tooltip).textContent = formatAge(p.birth, p.death);
+                    $$('.tooltip-ideas', tooltip).textContent = p.ideas;
+                    tooltip.classList.add('visible');
+                    
+                    // Create handler for updating tooltip position
+                    tooltipUpdateHandler = (e) => {
+                        const rect = tooltip.getBoundingClientRect();
+                        const x = e.clientX + 20 + rect.width > window.innerWidth ? e.clientX - rect.width - 20 : e.clientX + 20;
+                        const y = e.clientY + 20 + rect.height > window.innerHeight ? e.clientY - rect.height - 20 : e.clientY + 20;
+                        Object.assign(tooltip.style, { left: x + 'px', top: y + 'px' });
+                    };
+                    
+                    // Attach to network container
+                    container.addEventListener('mousemove', tooltipUpdateHandler);
+                }
+            });
+            
+            network.on('blurNode', () => {
+                hideTip();
+                if (tooltipUpdateHandler) {
+                    container.removeEventListener('mousemove', tooltipUpdateHandler);
+                    tooltipUpdateHandler = null;
+                }
+            });
+            
+            // Hide tooltip when hovering over edges or empty space
+            network.on('hoverEdge', () => {
+                hideTip();
+                if (tooltipUpdateHandler) {
+                    container.removeEventListener('mousemove', tooltipUpdateHandler);
+                    tooltipUpdateHandler = null;
+                }
+            });
+            
+            network.on('blurEdge', () => {
+                hideTip();
+            });
+            
+            // Click handler
+            network.on('click', (params) => {
+                if (params.nodes.length > 0) {
+                    const name = params.nodes[0];
+                    const philosopher = philosophers.find(p => p.name === name);
+                    if (philosopher && philosopher.wiki) {
+                        window.open(`https://en.wikipedia.org/wiki/${philosopher.wiki}`, '_blank');
+                    }
+                }
+            });
+        }
+        
+        function filterNetwork(resultNames) {
+            if (!network || !networkNodes || !networkEdges) return;
+            
+            // Update nodes visibility
+            networkNodes.forEach(node => {
+                networkNodes.update({
+                    id: node.id,
+                    hidden: !resultNames.has(node.id)
+                });
+            });
+            
+            // Update edges visibility - only show if both nodes are visible
+            networkEdges.forEach(edge => {
+                const shouldShow = resultNames.has(edge.from) && resultNames.has(edge.to);
+                networkEdges.update({
+                    id: edge.id,
+                    hidden: !shouldShow
+                });
+            });
+            
+            // Ensure physics is off before fitting
+            network.setOptions({ physics: false });
+            
+            // Fit view to visible nodes
+            if (resultNames.size > 0) {
+                setTimeout(() => {
+                    network.fit({
+                        animation: {
+                            duration: 500,
+                            easingFunction: 'easeInOutQuad'
+                        }
+                    });
+                    // Ensure physics stays off after fit animation
+                    setTimeout(() => {
+                        network.setOptions({ physics: false });
+                    }, 600);
+                }, 50);
+            }
+        }
+        
+        // View toggle
+        const legend = document.querySelector('.legend');
+        
+        document.querySelectorAll('.view-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const view = btn.dataset.view;
+                currentView = view;
+                
+                // Hide tooltip when switching views
+                hideTip();
+                if (tooltipUpdateHandler) {
+                    const container = $('network');
+                    container.removeEventListener('mousemove', tooltipUpdateHandler);
+                    tooltipUpdateHandler = null;
+                }
+                
+                // Update button states
+                document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                // Toggle views
+                if (view === 'timeline') {
+                    wrap.style.display = 'block';
+                    wrap.style.overflow = 'auto';  // Re-enable scrolling
+                    names.style.display = 'block';
+                    networkContainer.classList.remove('active');
+                    legend.style.display = 'block';
+                } else {
+                    wrap.style.display = 'none';
+                    names.style.display = 'none';
+                    networkContainer.classList.add('active');
+                    legend.style.display = 'none';
+                    if (!network) {
+                        initNetwork();
+                    }
+                    // Apply current search filter if any
+                    const query = searchInput.value.trim();
+                    if (query.length > 0) {
+                        const results = fuse.search(query);
+                        const resultNames = new Set(results.map(r => r.item.name));
+                        filterNetwork(resultNames);
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
