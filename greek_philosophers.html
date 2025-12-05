@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Greek Philosophers Timeline</title>
+    <title>Greek Philosophers Timeline - Enhanced</title>
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&family=Cormorant+Garamond:wght@500&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.6.2/fuse.min.js"></script>
@@ -318,6 +318,29 @@
             color: var(--text);
         }
         
+        .book-link {
+            color: #8B4513;
+            text-decoration: none;
+            font-size: 0.9em;
+            padding: 2px 4px;
+            border-radius: 3px;
+            transition: all 0.2s;
+            opacity: 0.7;
+            margin-left: 4px;
+        }
+        
+        .book-link:hover {
+            opacity: 1;
+            background: rgba(139, 69, 19, 0.1);
+            transform: scale(1.1);
+        }
+        
+        .name-links {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        
         .row {
             position: relative;
             height: 32px;
@@ -551,75 +574,75 @@
     <script>
         // Data
         const philosophers = [
-            {name: "Thales", birth: -624, death: -546, period: "pre-socratic", ideas: "First philosopher; water as fundamental substance; predicted solar eclipse; geometry; natural explanations.", wiki: "Thales_of_Miletus"},
-            {name: "Anaximander", birth: -610, death: -546, period: "pre-socratic", ideas: "The Apeiron (infinite/boundless); first cosmology; evolution theory; maps and astronomy.", wiki: "Anaximander"},
-            {name: "Anaximenes", birth: -585, death: -528, period: "pre-socratic", ideas: "Air as fundamental substance; condensation and rarefaction; meteorology; naturalism.", wiki: "Anaximenes_of_Miletus"},
-            {name: "Pythagoras", birth: -570, death: -495, period: "pre-socratic", ideas: "Mathematics and reality; transmigration of souls; music theory; number mysticism; ethical vegetarianism.", wiki: "Pythagoras"},
-            {name: "Xenophanes", birth: -570, death: -475, period: "pre-socratic", ideas: "Criticized anthropomorphic gods; monotheism; epistemological skepticism; geology; fossils.", wiki: "Xenophanes"},
-            {name: "Heraclitus", birth: -535, death: -475, period: "pre-socratic", ideas: "Flux and change; fire as fundamental; unity of opposites; logos; 'you cannot step twice into the same river'.", wiki: "Heraclitus"},
-            {name: "Parmenides", birth: -515, death: -450, period: "pre-socratic", ideas: "Being is unchanging; logic and deduction; rejected change and multiplicity; Way of Truth vs. Opinion.", wiki: "Parmenides"},
-            {name: "Anaxagoras", birth: -500, death: -428, period: "pre-socratic", ideas: "Nous (mind) as cosmic principle; everything in everything; astronomy; scientific method; atheism charges.", wiki: "Anaxagoras"},
-            {name: "Empedocles", birth: -490, death: -430, period: "pre-socratic", ideas: "Four elements (earth, air, fire, water); Love and Strife as forces; evolution; cosmology; poet-philosopher.", wiki: "Empedocles"},
-            {name: "Zeno of Elea", birth: -495, death: -430, period: "pre-socratic", ideas: "Paradoxes of motion; defense of Parmenides; dialectical method; Achilles and tortoise.", wiki: "Zeno_of_Elea"},
-            {name: "Protagoras", birth: -490, death: -420, period: "pre-socratic", ideas: "Man is the measure; relativism; sophistry; agnosticism; rhetoric; first to charge for teaching.", wiki: "Protagoras"},
-            {name: "Gorgias", birth: -483, death: -375, period: "pre-socratic", ideas: "Rhetoric over truth; nothing exists; skepticism; power of language; sophistry.", wiki: "Gorgias"},
-            {name: "Democritus", birth: -460, death: -370, period: "pre-socratic", ideas: "Atomism; void and atoms; determinism; ethics based on cheerfulness; materialism; laughing philosopher.", wiki: "Democritus"},
-            {name: "Socrates", birth: -469, death: -399, period: "classical", ideas: "Socratic method; virtue is knowledge; examined life; ethics; irony; martyrdom for philosophy.", wiki: "Socrates"},
-            {name: "Antisthenes", birth: -445, death: -365, period: "classical", ideas: "Founded Cynicism; virtue and self-sufficiency; rejected pleasure; simple living; influenced by Socrates.", wiki: "Antisthenes"},
-            {name: "Aristippus", birth: -435, death: -356, period: "classical", ideas: "Founded Cyrenaics; hedonism; pleasure as good; present moment; rejected abstract knowledge.", wiki: "Aristippus"},
-            {name: "Plato", birth: -428, death: -348, period: "classical", ideas: "Theory of Forms; Socratic dialogues; Republic; Academy; ideal state; philosopher-kings; tripartite soul.", wiki: "Plato"},
-            {name: "Diogenes of Sinope", birth: -412, death: -323, period: "classical", ideas: "Cynicism; lived in a barrel; rejected convention; cosmopolitanism; shamelessness; dog philosopher.", wiki: "Diogenes"},
-            {name: "Speusippus", birth: -407, death: -339, period: "classical", ideas: "Plato's nephew; succeeded him at Academy; mathematical philosophy; rejected Forms.", wiki: "Speusippus"},
-            {name: "Xenocrates", birth: -396, death: -314, period: "classical", ideas: "Platonist; head of Academy; systematized Plato's doctrines; metaphysics; numbered souls.", wiki: "Xenocrates"},
-            {name: "Aristotle", birth: -384, death: -322, period: "classical", ideas: "Logic; metaphysics; ethics; politics; Lyceum; biology; causation; virtue ethics; golden mean.", wiki: "Aristotle"},
-            {name: "Crates of Thebes", birth: -365, death: -285, period: "classical", ideas: "Cynic philosopher; gave away wealth; married Hipparchia; lived simply; satirical poetry.", wiki: "Crates_of_Thebes"},
-            {name: "Theophrastus", birth: -371, death: -287, period: "hellenistic", ideas: "Aristotle's successor; botany; Characters; logic; natural history; preserved Peripatetic school.", wiki: "Theophrastus"},
-            {name: "Pyrrho", birth: -360, death: -270, period: "hellenistic", ideas: "Founded Skepticism; suspension of judgment; ataraxia (tranquility); no certain knowledge.", wiki: "Pyrrho"},
-            {name: "Epicurus", birth: -341, death: -270, period: "hellenistic", ideas: "Hedonism; atomism; Garden school; pleasure as absence of pain; ethics; friendship; gods uninvolved.", wiki: "Epicurus"},
-            {name: "Zeno of Citium", birth: -334, death: -262, period: "hellenistic", ideas: "Founded Stoicism; virtue as only good; cosmopolitanism; Stoa Poikile; logic; physics; ethics.", wiki: "Zeno_of_Citium"},
-            {name: "Cleanthes", birth: -330, death: -230, period: "hellenistic", ideas: "Stoic; Hymn to Zeus; cosmic unity; determinism; ethics; succeeded Zeno.", wiki: "Cleanthes"},
-            {name: "Timon of Phlius", birth: -320, death: -230, period: "hellenistic", ideas: "Skeptic; student of Pyrrho; satirical poetry; Silloi; criticized dogmatism.", wiki: "Timon_of_Phlius"},
-            {name: "Arcesilaus", birth: -316, death: -241, period: "hellenistic", ideas: "Academic Skepticism; suspended judgment; criticized Stoics; probabilism; Academy leader.", wiki: "Arcesilaus"},
-            {name: "Chrysippus", birth: -279, death: -206, period: "hellenistic", ideas: "Systematized Stoicism; logic; fate and free will; 700+ works; second founder of Stoicism.", wiki: "Chrysippus"},
-            {name: "Carneades", birth: -214, death: -129, period: "hellenistic", ideas: "Academic Skeptic; probabilism; ethics; argued both sides; challenged dogmatism; Rome visit.", wiki: "Carneades"},
-            {name: "Panaetius", birth: -185, death: -110, period: "hellenistic", ideas: "Middle Stoicism; brought Stoicism to Rome; ethics; duties; influenced Cicero; cosmopolitanism.", wiki: "Panaetius"},
-            {name: "Posidonius", birth: -135, death: -51, period: "hellenistic", ideas: "Stoic polymath; history; geography; astronomy; natural science; cosmic sympathy; influenced Romans.", wiki: "Posidonius"},
-            {name: "Philo of Larissa", birth: -159, death: -84, period: "hellenistic", ideas: "Academic Skeptic; teacher of Cicero; fallibilism; last head of Old Academy; moved to Rome.", wiki: "Philo_of_Larissa"},
-            {name: "Antiochus of Ascalon", birth: -130, death: -68, period: "hellenistic", ideas: "Rejected skepticism; synthesized Plato, Aristotle, Stoics; Old Academy restoration; dogmatism.", wiki: "Antiochus_of_Ascalon"},
-            {name: "Cicero", birth: -106, death: -43, period: "hellenistic", ideas: "Roman statesman-philosopher; Academic Skepticism; transmitted Greek philosophy to Rome; rhetoric; law; De Re Publica.", wiki: "Cicero"},
-            {name: "Lucretius", birth: -99, death: -55, period: "hellenistic", ideas: "Epicurean poet; De Rerum Natura; atomism; naturalism; mortality of soul; anti-religion.", wiki: "Lucretius"},
-            {name: "Philodemus", birth: -110, death: -40, period: "hellenistic", ideas: "Epicurean; Herculaneum papyri; ethics; aesthetics; rhetoric; friendship; lived in Italy.", wiki: "Philodemus"},
-            {name: "Aenesidemus", birth: -100, death: -40, period: "hellenistic", ideas: "Revived Pyrrhonian Skepticism; ten modes; tropes; suspended judgment; criticized dogmatism.", wiki: "Aenesidemus"},
-            {name: "Seneca", birth: -4, death: 65, period: "imperial", ideas: "Roman Stoic; tragedies; letters; essays; tutor to Nero; ethics; suicide; brevity of life.", wiki: "Seneca_the_Younger"},
-            {name: "Musonius Rufus", birth: 30, death: 101, period: "imperial", ideas: "Roman Stoic; taught Epictetus; equality; practical ethics; exile; asceticism; women's education.", wiki: "Musonius_Rufus"},
-            {name: "Epictetus", birth: 50, death: 135, period: "imperial", ideas: "Stoic slave-philosopher; Enchiridion; Discourses; dichotomy of control; inner freedom; practical ethics.", wiki: "Epictetus"},
-            {name: "Plutarch", birth: 46, death: 120, period: "imperial", ideas: "Parallel Lives; Moralia; Middle Platonism; ethics; biography; theology; Delphic priest.", wiki: "Plutarch"},
-            {name: "Dio Chrysostom", birth: 40, death: 115, period: "imperial", ideas: "Orator; Stoic-Cynic; kingship; exile; practical philosophy; speeches; Second Sophistic.", wiki: "Dio_Chrysostom"},
-            {name: "Sextus Empiricus", birth: 160, death: 210, period: "imperial", ideas: "Pyrrhonian Skepticism; Outlines of Pyrrhonism; ten modes; medical skepticism; suspended judgment.", wiki: "Sextus_Empiricus"},
-            {name: "Marcus Aurelius", birth: 121, death: 180, period: "imperial", ideas: "Philosopher-emperor; Meditations; Stoicism; duty; cosmopolitanism; logos; Marcus the Philosopher.", wiki: "Marcus_Aurelius"},
-            {name: "Galen", birth: 129, death: 200, period: "imperial", ideas: "Physician-philosopher; medical works; logic; Aristotelian; anatomy; scientific method; influenced medicine.", wiki: "Galen"},
-            {name: "Clement of Alexandria", birth: 150, death: 215, period: "imperial", ideas: "Christian Platonist; faith and reason; Stromata; theology; Catechetical School; synthesis of Greek and Christian.", wiki: "Clement_of_Alexandria"},
-            {name: "Alcinous", birth: 130, death: 190, period: "imperial", ideas: "Middle Platonist; Handbook of Platonism; systematized Plato; theology; metaphysics; educational.", wiki: "Alcinous_(philosopher)"},
-            {name: "Alexander of Aphrodisias", birth: 150, death: 215, period: "imperial", ideas: "Peripatetic; Aristotle commentator; fate and providence; psychology; De Fato; preserved Aristotle.", wiki: "Alexander_of_Aphrodisias"},
-            {name: "Plotinus", birth: 204, death: 270, period: "imperial", ideas: "Founded Neoplatonism; the One; emanation; Enneads; mysticism; transcendence; influenced Christianity.", wiki: "Plotinus"},
-            {name: "Origen", birth: 185, death: 253, period: "imperial", ideas: "Christian theology; biblical exegesis; Platonism; Alexandria; First Principles; allegory; universal salvation.", wiki: "Origen"},
-            {name: "Porphyry", birth: 234, death: 305, period: "imperial", ideas: "Neoplatonist; edited Plotinus; Isagoge; logic; vegetarianism; theology; attacked Christianity.", wiki: "Porphyry_(philosopher)"},
-            {name: "Iamblichus", birth: 245, death: 325, period: "imperial", ideas: "Neoplatonist; theurgy; Syrian school; mathematics; mysticism; elaborated emanation theory.", wiki: "Iamblichus"},
-            {name: "Themistius", birth: 317, death: 388, period: "imperial", ideas: "Peripatetic; Aristotle paraphrases; philosopher-statesman; religious tolerance; Constantinople; paganism.", wiki: "Themistius"},
-            {name: "Gregory of Nazianzus", birth: 329, death: 390, period: "imperial", ideas: "Cappadocian Father; Trinity; rhetoric; theology; poetry; Constantinople; classical education.", wiki: "Gregory_of_Nazianzus"},
-            {name: "Basil of Caesarea", birth: 330, death: 379, period: "imperial", ideas: "Cappadocian Father; monasticism; Trinity; social justice; classical learning; liturgy.", wiki: "Basil_of_Caesarea"},
-            {name: "Gregory of Nyssa", birth: 335, death: 395, period: "imperial", ideas: "Cappadocian Father; mystical theology; infinity of God; apocatastasis; Platonism; contemplation.", wiki: "Gregory_of_Nyssa"},
-            {name: "Augustine", birth: 354, death: 430, period: "imperial", ideas: "Neoplatonism and Christianity; Confessions; City of God; original sin; grace; time; memory; just war.", wiki: "Augustine_of_Hippo"},
-            {name: "Hypatia", birth: 360, death: 415, period: "imperial", ideas: "Neoplatonist; mathematics; astronomy; Alexandria; first notable woman philosopher; martyrdom.", wiki: "Hypatia"},
-            {name: "Proclus", birth: 412, death: 485, period: "imperial", ideas: "Late Neoplatonist; systematized Platonism; Elements of Theology; Athenian school; metaphysics; mathematics.", wiki: "Proclus"},
-            {name: "Ammonius (son of Hermias)", birth: 440, death: 520, period: "imperial", ideas: "Neoplatonist commentator; reconciled Plato and Aristotle; taught in Alexandria; logic.", wiki: "Ammonius_Hermiae"},
-            {name: "Damascius", birth: 458, death: 538, period: "imperial", ideas: "Last Neoplatonist; ineffable first principle; philosophy and mysticism; closed Athenian school.", wiki: "Damascius"},
-            {name: "Boethius", birth: 477, death: 524, period: "imperial", ideas: "Consolation of Philosophy; transmitted Greek philosophy to medieval West; logic; music theory; fortune's wheel.", wiki: "Boethius"},
-            {name: "Marinus of Neapolis", birth: 440, death: 495, period: "imperial", ideas: "Neoplatonist; student and biographer of Proclus; succeeded as head of Academy; commentaries; mathematics.", wiki: "Marinus_of_Neapolis"},
-            {name: "Simplicius", birth: 490, death: 560, period: "imperial", ideas: "Neoplatonist commentator; preserved pre-Socratic fragments; Aristotle commentaries; philosophy of science.", wiki: "Simplicius_of_Cilicia"},
-            {name: "John Philoponus", birth: 490, death: 570, period: "imperial", ideas: "Christian philosophy; criticized Aristotle's eternity of world; impetus theory; influenced medieval science; anti-pagan.", wiki: "John_Philoponus"},
-            {name: "Olympiodorus", birth: 495, death: 570, period: "imperial", ideas: "Last Athenian Neoplatonist; commentaries; preserved philosophical tradition; alchemy.", wiki: "Olympiodorus_the_Younger"},
-            {name: "Macrobius", birth: 385, death: 430, period: "imperial", ideas: "Neoplatonist; Commentary on Scipio's Dream; Saturnalia; transmitted Platonic cosmology to Middle Ages."}
+            {name: "Thales", birth: -624, death: -546, period: "pre-socratic", ideas: "First philosopher; water as fundamental substance; predicted solar eclipse; geometry; natural explanations.", wiki: "Thales_of_Miletus", works: null},
+            {name: "Anaximander", birth: -610, death: -546, period: "pre-socratic", ideas: "The Apeiron (infinite/boundless); first cosmology; evolution theory; maps and astronomy.", wiki: "Anaximander", works: null},
+            {name: "Anaximenes", birth: -585, death: -528, period: "pre-socratic", ideas: "Air as fundamental substance; condensation and rarefaction; meteorology; naturalism.", wiki: "Anaximenes_of_Miletus", works: null},
+            {name: "Pythagoras", birth: -570, death: -495, period: "pre-socratic", ideas: "Mathematics and reality; transmigration of souls; music theory; number mysticism; ethical vegetarianism.", wiki: "Pythagoras", works: [{title: "Life of Pythagoras (by Iamblichus)", url: "https://www.gutenberg.org/ebooks/63300"}]},
+            {name: "Xenophanes", birth: -570, death: -475, period: "pre-socratic", ideas: "Criticized anthropomorphic gods; monotheism; epistemological skepticism; geology; fossils.", wiki: "Xenophanes", works: null},
+            {name: "Heraclitus", birth: -535, death: -475, period: "pre-socratic", ideas: "Flux and change; fire as fundamental; unity of opposites; logos; 'you cannot step twice into the same river'.", wiki: "Heraclitus", works: [{title: "Fragments (Wikisource)", url: "https://en.wikisource.org/wiki/Fragments_of_Heraclitus"}, {title: "Fragments (Bilingual)", url: "http://philoctetes.free.fr/heraclitus.htm"}]},
+            {name: "Parmenides", birth: -515, death: -450, period: "pre-socratic", ideas: "Being is unchanging; logic and deduction; rejected change and multiplicity; Way of Truth vs. Opinion.", wiki: "Parmenides", works: [{title: "Poem On Nature (Wikisource)", url: "https://en.wikisource.org/wiki/The_Fragments_of_Parmenides_(Davidson_1869)"}, {title: "Fragments (Bilingual)", url: "http://philoctetes.free.fr/parmenides.htm"}]},
+            {name: "Anaxagoras", birth: -500, death: -428, period: "pre-socratic", ideas: "Nous (mind) as cosmic principle; everything in everything; astronomy; scientific method; atheism charges.", wiki: "Anaxagoras", works: [{title: "Fragments (Wikisource)", url: "https://en.wikisource.org/wiki/Fragments_of_Anaxagoras"}, {title: "Fragments (Hanover)", url: "https://history.hanover.edu/texts/presoc/anaxagor.html"}]},
+            {name: "Empedocles", birth: -490, death: -430, period: "pre-socratic", ideas: "Four elements (earth, air, fire, water); Love and Strife as forces; evolution; cosmology; poet-philosopher.", wiki: "Empedocles", works: [{title: "Fragments (Wikisource)", url: "https://en.wikisource.org/wiki/Fragments_of_Empedocles"}, {title: "Fragments (Archive.org)", url: "https://archive.org/details/the-fragments-of-empedocles"}]},
+            {name: "Zeno of Elea", birth: -495, death: -430, period: "pre-socratic", ideas: "Paradoxes of motion; defense of Parmenides; dialectical method; Achilles and tortoise.", wiki: "Zeno_of_Elea", works: null},
+            {name: "Protagoras", birth: -490, death: -420, period: "pre-socratic", ideas: "Man is the measure; relativism; sophistry; agnosticism; rhetoric; first to charge for teaching.", wiki: "Protagoras", works: null},
+            {name: "Gorgias", birth: -483, death: -375, period: "pre-socratic", ideas: "Rhetoric over truth; nothing exists; skepticism; power of language; sophistry.", wiki: "Gorgias", works: null},
+            {name: "Democritus", birth: -460, death: -370, period: "pre-socratic", ideas: "Atomism; void and atoms; determinism; ethics based on cheerfulness; materialism; laughing philosopher.", wiki: "Democritus", works: [{title: "Fragments (Demonax)", url: "https://demonax.info/doku.php?id=text:democritus_fragments"}]},
+            {name: "Socrates", birth: -469, death: -399, period: "classical", ideas: "Socratic method; virtue is knowledge; examined life; ethics; irony; martyrdom for philosophy.", wiki: "Socrates", works: [{title: "Xenophon Complete Works", url: "https://www.gutenberg.org/ebooks/author/543"}, {title: "Memorabilia (Xenophon)", url: "https://www.gutenberg.org/ebooks/1177"}, {title: "Apology (Xenophon)", url: "https://www.gutenberg.org/ebooks/1171"}, {title: "Symposium (Xenophon)", url: "https://www.gutenberg.org/ebooks/1181"}]},
+            {name: "Antisthenes", birth: -445, death: -365, period: "classical", ideas: "Founded Cynicism; virtue and self-sufficiency; rejected pleasure; simple living; influenced by Socrates.", wiki: "Antisthenes", works: null},
+            {name: "Aristippus", birth: -435, death: -356, period: "classical", ideas: "Founded Cyrenaics; hedonism; pleasure as good; present moment; rejected abstract knowledge.", wiki: "Aristippus", works: null},
+            {name: "Plato", birth: -428, death: -348, period: "classical", ideas: "Theory of Forms; Socratic dialogues; Republic; Academy; ideal state; philosopher-kings; tripartite soul.", wiki: "Plato", works: [{title: "Complete Dialogues (5 vols)", url: "https://archive.org/details/platsd"}, {title: "Individual Dialogues", url: "https://www.gutenberg.org/ebooks/author/93"}, {title: "Plato & Other Companions (Grote)", url: "https://www.gutenberg.org/ebooks/40436"}]},
+            {name: "Diogenes of Sinope", birth: -412, death: -323, period: "classical", ideas: "Cynicism; lived in a barrel; rejected convention; cosmopolitanism; shamelessness; dog philosopher.", wiki: "Diogenes", works: null},
+            {name: "Speusippus", birth: -407, death: -339, period: "classical", ideas: "Plato's nephew; succeeded him at Academy; mathematical philosophy; rejected Forms.", wiki: "Speusippus", works: null},
+            {name: "Xenocrates", birth: -396, death: -314, period: "classical", ideas: "Platonist; head of Academy; systematized Plato's doctrines; metaphysics; numbered souls.", wiki: "Xenocrates", works: null},
+            {name: "Aristotle", birth: -384, death: -322, period: "classical", ideas: "Logic; metaphysics; ethics; politics; Lyceum; biology; causation; virtue ethics; golden mean.", wiki: "Aristotle", works: [{title: "Nicomachean Ethics", url: "https://www.gutenberg.org/ebooks/8438"}, {title: "Politics", url: "https://www.gutenberg.org/ebooks/6762"}, {title: "Poetics", url: "https://www.gutenberg.org/ebooks/1974"}, {title: "Athenian Constitution", url: "https://www.gutenberg.org/ebooks/26095"}, {title: "Categories", url: "https://www.gutenberg.org/ebooks/2412"}]},
+            {name: "Crates of Thebes", birth: -365, death: -285, period: "classical", ideas: "Cynic philosopher; gave away wealth; married Hipparchia; lived simply; satirical poetry.", wiki: "Crates_of_Thebes", works: null},
+            {name: "Theophrastus", birth: -371, death: -287, period: "hellenistic", ideas: "Aristotle's successor; botany; Characters; logic; natural history; preserved Peripatetic school.", wiki: "Theophrastus", works: null},
+            {name: "Pyrrho", birth: -360, death: -270, period: "hellenistic", ideas: "Founded Skepticism; suspension of judgment; ataraxia (tranquility); no certain knowledge.", wiki: "Pyrrho", works: null},
+            {name: "Epicurus", birth: -341, death: -270, period: "hellenistic", ideas: "Hedonism; atomism; Garden school; pleasure as absence of pain; ethics; friendship; gods uninvolved.", wiki: "Epicurus", works: [{title: "Letter to Menoeceus", url: "http://classics.mit.edu/Epicurus/menoec.html"}, {title: "Principal Doctrines", url: "http://classics.mit.edu/Epicurus/princdoc.html"}]},
+            {name: "Zeno of Citium", birth: -334, death: -262, period: "hellenistic", ideas: "Founded Stoicism; virtue as only good; cosmopolitanism; Stoa Poikile; logic; physics; ethics.", wiki: "Zeno_of_Citium", works: null},
+            {name: "Cleanthes", birth: -330, death: -230, period: "hellenistic", ideas: "Stoic; Hymn to Zeus; cosmic unity; determinism; ethics; succeeded Zeno.", wiki: "Cleanthes", works: [{title: "Golden Sayings + Hymn of Cleanthes", url: "https://www.gutenberg.org/ebooks/4708"}]},
+            {name: "Timon of Phlius", birth: -320, death: -230, period: "hellenistic", ideas: "Skeptic; student of Pyrrho; satirical poetry; Silloi; criticized dogmatism.", wiki: "Timon_of_Phlius", works: null},
+            {name: "Arcesilaus", birth: -316, death: -241, period: "hellenistic", ideas: "Academic Skepticism; suspended judgment; criticized Stoics; probabilism; Academy leader.", wiki: "Arcesilaus", works: null},
+            {name: "Chrysippus", birth: -279, death: -206, period: "hellenistic", ideas: "Systematized Stoicism; logic; fate and free will; 700+ works; second founder of Stoicism.", wiki: "Chrysippus", works: null},
+            {name: "Carneades", birth: -214, death: -129, period: "hellenistic", ideas: "Academic Skeptic; probabilism; ethics; argued both sides; challenged dogmatism; Rome visit.", wiki: "Carneades", works: null},
+            {name: "Panaetius", birth: -185, death: -110, period: "hellenistic", ideas: "Middle Stoicism; brought Stoicism to Rome; ethics; duties; influenced Cicero; cosmopolitanism.", wiki: "Panaetius", works: null},
+            {name: "Posidonius", birth: -135, death: -51, period: "hellenistic", ideas: "Stoic polymath; history; geography; astronomy; natural science; cosmic sympathy; influenced Romans.", wiki: "Posidonius", works: null},
+            {name: "Philo of Larissa", birth: -159, death: -84, period: "hellenistic", ideas: "Academic Skeptic; teacher of Cicero; fallibilism; last head of Old Academy; moved to Rome.", wiki: "Philo_of_Larissa", works: null},
+            {name: "Antiochus of Ascalon", birth: -130, death: -68, period: "hellenistic", ideas: "Rejected skepticism; synthesized Plato, Aristotle, Stoics; Old Academy restoration; dogmatism.", wiki: "Antiochus_of_Ascalon", works: null},
+            {name: "Cicero", birth: -106, death: -43, period: "hellenistic", ideas: "Roman statesman-philosopher; Academic Skepticism; transmitted Greek philosophy to Rome; rhetoric; law; De Re Publica.", wiki: "Cicero", works: [{title: "Complete Works Collection", url: "https://www.gutenberg.org/ebooks/author/128"}]},
+            {name: "Lucretius", birth: -99, death: -55, period: "hellenistic", ideas: "Epicurean poet; De Rerum Natura; atomism; naturalism; mortality of soul; anti-religion.", wiki: "Lucretius", works: [{title: "De Rerum Natura", url: "https://www.gutenberg.org/ebooks/785"}]},
+            {name: "Philodemus", birth: -110, death: -40, period: "hellenistic", ideas: "Epicurean; Herculaneum papyri; ethics; aesthetics; rhetoric; friendship; lived in Italy.", wiki: "Philodemus", works: null},
+            {name: "Aenesidemus", birth: -100, death: -40, period: "hellenistic", ideas: "Revived Pyrrhonian Skepticism; ten modes; tropes; suspended judgment; criticized dogmatism.", wiki: "Aenesidemus", works: null},
+            {name: "Seneca", birth: -4, death: 65, period: "imperial", ideas: "Roman Stoic; tragedies; letters; essays; tutor to Nero; ethics; suicide; brevity of life.", wiki: "Seneca_the_Younger", works: [{title: "Complete Works", url: "https://www.gutenberg.org/ebooks/author/1308"}]},
+            {name: "Musonius Rufus", birth: 30, death: 101, period: "imperial", ideas: "Roman Stoic; taught Epictetus; equality; practical ethics; exile; asceticism; women's education.", wiki: "Musonius_Rufus", works: null},
+            {name: "Epictetus", birth: 50, death: 135, period: "imperial", ideas: "Stoic slave-philosopher; Enchiridion; Discourses; dichotomy of control; inner freedom; practical ethics.", wiki: "Epictetus", works: [{title: "Enchiridion", url: "https://www.gutenberg.org/ebooks/45109"}, {title: "Discourses & Enchiridion", url: "https://www.gutenberg.org/ebooks/10661"}, {title: "The Teaching of Epictetus", url: "https://www.gutenberg.org/ebooks/39855"}, {title: "Golden Sayings", url: "https://www.gutenberg.org/ebooks/4708"}]},
+            {name: "Plutarch", birth: 46, death: 120, period: "imperial", ideas: "Parallel Lives; Moralia; Middle Platonism; ethics; biography; theology; Delphic priest.", wiki: "Plutarch", works: [{title: "Complete Works Collection", url: "https://www.gutenberg.org/ebooks/author/342"}, {title: "Parallel Lives", url: "https://www.gutenberg.org/ebooks/674"}]},
+            {name: "Dio Chrysostom", birth: 40, death: 115, period: "imperial", ideas: "Orator; Stoic-Cynic; kingship; exile; practical philosophy; speeches; Second Sophistic.", wiki: "Dio_Chrysostom", works: null},
+            {name: "Sextus Empiricus", birth: 160, death: 210, period: "imperial", ideas: "Pyrrhonian Skepticism; Outlines of Pyrrhonism; ten modes; medical skepticism; suspended judgment.", wiki: "Sextus_Empiricus", works: null},
+            {name: "Marcus Aurelius", birth: 121, death: 180, period: "imperial", ideas: "Philosopher-emperor; Meditations; Stoicism; duty; cosmopolitanism; logos; Marcus the Philosopher.", wiki: "Marcus_Aurelius", works: [{title: "Meditations", url: "https://www.gutenberg.org/ebooks/2680"}, {title: "Thoughts (Long trans.)", url: "https://www.gutenberg.org/ebooks/15877"}]},
+            {name: "Galen", birth: 129, death: 200, period: "imperial", ideas: "Physician-philosopher; medical works; logic; Aristotelian; anatomy; scientific method; influenced medicine.", wiki: "Galen", works: null},
+            {name: "Clement of Alexandria", birth: 150, death: 215, period: "imperial", ideas: "Christian Platonist; faith and reason; Stromata; theology; Catechetical School; synthesis of Greek and Christian.", wiki: "Clement_of_Alexandria", works: null},
+            {name: "Alcinous", birth: 130, death: 190, period: "imperial", ideas: "Middle Platonist; Handbook of Platonism; systematized Plato; theology; metaphysics; educational.", wiki: "Alcinous_(philosopher)", works: null},
+            {name: "Alexander of Aphrodisias", birth: 150, death: 215, period: "imperial", ideas: "Peripatetic; Aristotle commentator; fate and providence; psychology; De Fato; preserved Aristotle.", wiki: "Alexander_of_Aphrodisias", works: null},
+            {name: "Plotinus", birth: 204, death: 270, period: "imperial", ideas: "Founded Neoplatonism; the One; emanation; Enneads; mysticism; transcendence; influenced Christianity.", wiki: "Plotinus", works: [{title: "Enneads (4 vols complete)", url: "https://www.gutenberg.org/ebooks/author/4934"}]},
+            {name: "Origen", birth: 185, death: 253, period: "imperial", ideas: "Christian theology; biblical exegesis; Platonism; Alexandria; First Principles; allegory; universal salvation.", wiki: "Origen", works: null},
+            {name: "Porphyry", birth: 234, death: 305, period: "imperial", ideas: "Neoplatonist; edited Plotinus; Isagoge; logic; vegetarianism; theology; attacked Christianity.", wiki: "Porphyry_(philosopher)", works: [{title: "Select Works", url: "https://www.gutenberg.org/ebooks/77014"}]},
+            {name: "Iamblichus", birth: 245, death: 325, period: "imperial", ideas: "Neoplatonist; theurgy; Syrian school; mathematics; mysticism; elaborated emanation theory.", wiki: "Iamblichus", works: [{title: "Life of Pythagoras", url: "https://www.gutenberg.org/ebooks/63300"}, {title: "On the Mysteries", url: "https://www.gutenberg.org/ebooks/75929"}]},
+            {name: "Themistius", birth: 317, death: 388, period: "imperial", ideas: "Peripatetic; Aristotle paraphrases; philosopher-statesman; religious tolerance; Constantinople; paganism.", wiki: "Themistius", works: null},
+            {name: "Gregory of Nazianzus", birth: 329, death: 390, period: "imperial", ideas: "Cappadocian Father; Trinity; rhetoric; theology; poetry; Constantinople; classical education.", wiki: "Gregory_of_Nazianzus", works: null},
+            {name: "Basil of Caesarea", birth: 330, death: 379, period: "imperial", ideas: "Cappadocian Father; monasticism; Trinity; social justice; classical learning; liturgy.", wiki: "Basil_of_Caesarea", works: null},
+            {name: "Gregory of Nyssa", birth: 335, death: 395, period: "imperial", ideas: "Cappadocian Father; mystical theology; infinity of God; apocatastasis; Platonism; contemplation.", wiki: "Gregory_of_Nyssa", works: null},
+            {name: "Augustine", birth: 354, death: 430, period: "imperial", ideas: "Neoplatonism and Christianity; Confessions; City of God; original sin; grace; time; memory; just war.", wiki: "Augustine_of_Hippo", works: [{title: "Complete Works", url: "https://www.gutenberg.org/ebooks/author/1156"}, {title: "Confessions", url: "https://www.gutenberg.org/ebooks/3296"}]},
+            {name: "Hypatia", birth: 360, death: 415, period: "imperial", ideas: "Neoplatonist; mathematics; astronomy; Alexandria; first notable woman philosopher; martyrdom.", wiki: "Hypatia", works: null},
+            {name: "Proclus", birth: 412, death: 485, period: "imperial", ideas: "Late Neoplatonist; systematized Platonism; Elements of Theology; Athenian school; metaphysics; mathematics.", wiki: "Proclus", works: null},
+            {name: "Ammonius (son of Hermias)", birth: 440, death: 520, period: "imperial", ideas: "Neoplatonist commentator; reconciled Plato and Aristotle; taught in Alexandria; logic.", wiki: "Ammonius_Hermiae", works: null},
+            {name: "Damascius", birth: 458, death: 538, period: "imperial", ideas: "Last Neoplatonist; ineffable first principle; philosophy and mysticism; closed Athenian school.", wiki: "Damascius", works: null},
+            {name: "Boethius", birth: 477, death: 524, period: "imperial", ideas: "Consolation of Philosophy; transmitted Greek philosophy to medieval West; logic; music theory; fortune's wheel.", wiki: "Boethius", works: [{title: "Complete Works", url: "https://www.gutenberg.org/ebooks/13316"}, {title: "Consolation of Philosophy", url: "https://www.gutenberg.org/ebooks/14328"}]},
+            {name: "Marinus of Neapolis", birth: 440, death: 495, period: "imperial", ideas: "Neoplatonist; student and biographer of Proclus; succeeded as head of Academy; commentaries; mathematics.", wiki: "Marinus_of_Neapolis", works: null},
+            {name: "Simplicius", birth: 490, death: 560, period: "imperial", ideas: "Neoplatonist commentator; preserved pre-Socratic fragments; Aristotle commentaries; philosophy of science.", wiki: "Simplicius_of_Cilicia", works: null},
+            {name: "John Philoponus", birth: 490, death: 570, period: "imperial", ideas: "Christian philosophy; criticized Aristotle's eternity of world; impetus theory; influenced medieval science; anti-pagan.", wiki: "John_Philoponus", works: null},
+            {name: "Olympiodorus", birth: 495, death: 570, period: "imperial", ideas: "Last Athenian Neoplatonist; commentaries; preserved philosophical tradition; alchemy.", wiki: "Olympiodorus_the_Younger", works: null},
+            {name: "Macrobius", birth: 385, death: 430, period: "imperial", ideas: "Neoplatonist; Commentary on Scipio's Dream; Saturnalia; transmitted Platonic cosmology to Middle Ages.", wiki: "Macrobius", works: null},
         ];
 
         // Add relationship data for network
@@ -877,7 +900,25 @@
                 const nameText = document.createElement('span');
                 nameText.textContent = p.name;
                 
-                // Create Wikipedia link
+                // Create container for links (book links + wiki link)
+                const linksContainer = document.createElement('div');
+                linksContainer.className = 'name-links';
+                
+                // Add book links if works exist
+                if (p.works && p.works.length > 0) {
+                    p.works.forEach((work, index) => {
+                        const bookLink = document.createElement('a');
+                        bookLink.href = work.url;
+                        bookLink.textContent = '📖';
+                        bookLink.className = 'book-link';
+                        bookLink.target = '_blank';
+                        bookLink.title = work.title;
+                        bookLink.onclick = (e) => e.stopPropagation();
+                        linksContainer.appendChild(bookLink);
+                    });
+                }
+                
+                // Create Wikipedia link (always last)
                 const wikiLink = document.createElement('a');
                 wikiLink.href = `https://en.wikipedia.org/wiki/${p.wiki}`;
                 wikiLink.textContent = 'Ⓦ';
@@ -885,9 +926,10 @@
                 wikiLink.target = '_blank';
                 wikiLink.title = `Wikipedia: ${p.name}`;
                 wikiLink.onclick = (e) => e.stopPropagation();
+                linksContainer.appendChild(wikiLink);
                 
                 nameEl.appendChild(nameText);
-                nameEl.appendChild(wikiLink);
+                nameEl.appendChild(linksContainer);
                 nameGroup.appendChild(nameEl);
                 
                 const row = create('div', 'row');
